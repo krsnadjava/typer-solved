@@ -1,5 +1,8 @@
 var game_anim;
 var total_score;
+var typer_view;
+var text_input;
+var game_started = false;
 
 var Word = Backbone.Model.extend({
 	move: function() {
@@ -83,12 +86,18 @@ var ScoreView = Backbone.View.extend({
 	},
 
 	render: function() {
-		this.$el.html('Score : ' + this.model.get('value'));
+		if(game_started) {
+			this.$el.html('Score : ' + this.model.get('value'));
+		} else {
+			this.$el.html('Final Score : ' + this.model.get('value'));
+		}
 	}
 });
 
 var TyperView = Backbone.View.extend({
 	initialize: function() {
+		game_started = true;
+
 		var wrapper = $('<div>')
 			.css({
 				position:'fixed',
@@ -101,7 +110,7 @@ var TyperView = Backbone.View.extend({
 		this.wrapper = wrapper;
 		
 		var self = this;
-		var text_input = $('<input>')
+		text_input = $('<input>')
 			.addClass('form-control')
 			.css({
 				'border-radius':'4px',
@@ -217,6 +226,25 @@ var TyperView = Backbone.View.extend({
 				);
 	},
 	
+	events: {
+		"click .btn#start": "startClicked",
+		"click .btn#stop": "stopClicked",
+		"click .btn#pause": "pauseClicked",
+		"click .btn#resume": "startClicked"
+	},
+
+	startClicked: function() {
+		this.model.start();
+	},
+
+	stopClicked: function() {
+		this.model.end();
+	},
+
+	pauseClicked: function() {
+		this.model.pause();
+	},
+
 	render: function() {
 		var model = this.model;
 		var words = model.get('words');
@@ -254,24 +282,54 @@ var Typer = Backbone.Model.extend({
 			el: $(document.body)
 		});
 
+		text_input.prop('disabled', true);
+
 		total_score = new ScoreView({
 			model: new Score()
 		});
+
+		var vendors = ['ms', 'moz', 'webkit', 'o'];
+  		for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+  		  window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+  		  window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame'] 
+  		                             || window[vendors[x]+'CancelRequestAnimationFrame'];
+  		}
+	},
+
+	end: function() {
+		text_input.prop('disabled', true);
+		game_started = false;
+		game_anim = null;
+	},
+
+	pause: function() {
+		text_input.prop('disabled', true);
+		window.cancelAnimationFrame(game_anim);
+		game_anim = null;
 	},
 
 	start: function() {
 		var animation_delay = 100;
 		var self = this;
 		
+		if(!game_started) {
+			self.initialize();
+			window.cancelAnimationFrame(game_anim);
+			game_started = true;
+		}
+
 		function loop() {
   			self.iterate();
   			game_anim = window.requestAnimationFrame(loop);
         }
-		game_anim = window.requestAnimationFrame(loop);
+        loop();
+		text_input.prop('disabled', false);
+		text_input.focus();
 	},
 	
 	iterate: function() {
-		var words = this.get('words');
+		var words = null;
+		words = this.get('words');
 		if(words.length < this.get('max_num_words')) {
 			var top_most_word = undefined;
 			for(var i = 0;i < words.length;i++) {
@@ -304,18 +362,26 @@ var Typer = Backbone.Model.extend({
 		}
 		
 		var words_to_be_removed = [];
-		for(var i = 0;i < words.length;i++) {
-			var word = words.at(i);
-			word.move();
-			
-			if(word.get('y') > $(window).height() || word.get('move_next_iteration')) {
+		if(game_started) {
+			for(var i = 0;i < words.length;i++) {
+				var word = words.at(i);
+				word.move();
+				
+				if(word.get('y') > $(window).height() || word.get('move_next_iteration')) {
+					words_to_be_removed.push(word);
+				}
+				
+				if(word.get('highlight') && word.get('string').length == word.get('highlight')) {
+					word.set({move_next_iteration:true});
+				}
+			}
+		} else {
+			for(var i = 0;i < words.length;i++) {
+				var word = words.at(i);
 				words_to_be_removed.push(word);
 			}
-			
-			if(word.get('highlight') && word.get('string').length == word.get('highlight')) {
-				word.set({move_next_iteration:true});
-			}
 		}
+		
 		
 		for(var i = 0;i < words_to_be_removed.length;i++) {
 			words.remove(words_to_be_removed[i]);
