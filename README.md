@@ -1,21 +1,24 @@
-## Typer Problem
+# Typer Problem
+A simple game made with Javascript.
+
+You can find original problem [here](https://github.com/shendykurnia/typer)
     
-Pertanyaan:   
+## Answer
 Sebutkan library apa saja yang dipakai, website library itu dimana, dan dokumentasi library itu ada dimana.
 
-> ### jQuery
+> jQuery
 [Official website](https://jquery.com/) atau [Github](https://github.com/jquery/jquery)
 
-> ### jQUery UI
+> jQUery UI
 [Official website](https://jqueryui.com/) atau [Github](https://github.com/jquery/jquery-ui)
 
-> ### Underscore.js
+> Underscore.js
 [Official website](http://underscorejs.org/) atau [Github](https://github.com/jashkenas/underscore)
 
-> ### Backbone.js
+> Backbone.js
 [Official website](http://backbonejs.org/) atau [Github](https://github.com/jashkenas/backbone)
 
-> ### Bootstrap CSS
+> Bootstrap CSS
 [Official website](http://getbootstrap.com/) atau [Github](https://github.com/twbs/bootstrap)
 
 Aplikasi itu 'laggy'. Kenapa? Bagaimana cara membuat animasi lebih 'smooth'?
@@ -26,9 +29,9 @@ Aplikasi itu tidak akan jalan di salah satu 3 browser populer (Chrome, Firefox, 
 
 > Aplikasi tidak akan bekerja pada Internet Explorer versi terbaru (walaupun dapat dijalankan jika compability view diaktifkan). Hal ini terjadi karena terdapat kesalahan syntax pada javascript yang digunakan. Di dalam file "Typer.js" terdapat karakter koma ',' pada akhir baris ke 141 yang merupakan kesalahan syntax. Karakter tersebut harus dihapus.
 
-Implementasikan tombol Start, Stop, Pause, dan Resume.   
-Ketika ukuran window dirubah, susunan huruf yang 'terbentur' batas window menjadi tidak 1 baris. Benarkan.    
-Implementasikan sistem score.   
+Implementasikan tombol Start, Stop, Pause, dan Resume.
+Ketika ukuran window dirubah, susunan huruf yang 'terbentur' batas window menjadi tidak 1 baris. Benarkan.
+Implementasikan sistem score.
 Implementasikan hukuman berupa pengurangan nilai bila salah ketik.
 
-> See source code
+> See [source code](https://github.com/krsnadjava/typer-solved/blob/master/typer.js)
