@@ -1,3 +1,6 @@
+var game_anim;
+var total_score;
+
 var Word = Backbone.Model.extend({
 	move: function() {
 		this.set({y:this.get('y') + this.get('speed')});
@@ -10,7 +13,7 @@ var Words = Backbone.Collection.extend({
 
 var WordView = Backbone.View.extend({
 	initialize: function() {
-		$(this.el).css({position:'absolute'});
+		$(this.el).css({position:'absolute', overflow: "hidden", "min-width":"1000px", width: "auto !important", width: "1000px"});
 		var string = this.model.get('string');
 		var letter_width = 25;
 		var word_width = string.length * letter_width;
@@ -38,7 +41,7 @@ var WordView = Backbone.View.extend({
 	},
 	
 	render:function() {
-		//$(this.el).hide();
+		$(this.el).hide();
 		$(this.el).css({
 			top:this.model.get('y') + 'px',
 			left:this.model.get('x') + 'px'
@@ -51,7 +54,36 @@ var WordView = Backbone.View.extend({
 				$(element).css({'font-weight':'normal','background-color':'#fff',color:'#000'});
 			}
 		});
-		//$(this.el).show();
+		$(this.el).show();
+	}
+});
+
+/* SCORE SYSTEM */
+var Score = Backbone.Model.extend({
+	defaults: {
+		value: 0
+	},
+
+	increase: function() {
+		this.set({value:this.get('value') + 50});
+	},
+
+	decrease: function(punishment) {
+		if(this.get('value') > 0) {
+			this.set({value:this.get('value') - punishment});
+		}
+	}
+});
+
+var ScoreView = Backbone.View.extend({
+	el:  "#total-score",
+
+	initialize: function() {
+		this.render();
+	},
+
+	render: function() {
+		this.$el.html('Score : ' + this.model.get('value'));
 	}
 });
 
@@ -64,7 +96,8 @@ var TyperView = Backbone.View.extend({
 				left:'0',
 				width:'100%',
 				height:'100%'
-			});
+			})
+			.addClass("container-fluid");
 		this.wrapper = wrapper;
 		
 		var self = this;
@@ -80,18 +113,25 @@ var TyperView = Backbone.View.extend({
 				'z-index':'1000'
 			}).keyup(function() {
 				var words = self.model.get('words');
+				var mistyped = true;
 				for(var i = 0;i < words.length;i++) {
 					var word = words.at(i);
 					var typed_string = $(this).val();
 					var string = word.get('string');
 					if(string.toLowerCase().indexOf(typed_string.toLowerCase()) == 0) {
+						mistyped = false;
 						word.set({highlight:typed_string.length});
 						if(typed_string.length == string.length) {
 							$(this).val('');
+							total_score.model.increase();
 						}
 					} else {
 						word.set({highlight:0});
 					}
+				}
+
+				if(mistyped) {
+					total_score.model.decrease(10);
 				}
 			});
 		
@@ -110,6 +150,71 @@ var TyperView = Backbone.View.extend({
 		text_input.focus();
 		
 		this.listenTo(this.model, 'change', this.render);
+
+		$(this.el)
+			.append(wrapper
+				.append($('<div>')
+					.append($('<div>')
+						.addClass("col-xs-2 col-md-2 col-lg-1")
+						.append($('<button>')
+							.attr({
+								class:'btn btn-block btn-large btn-primary',
+								id:'start'
+							})
+							.css({
+								'position': 'absolute',
+								'z-index': '1000'
+							})
+							.append("Start")))
+					.append($('<div>')
+						.addClass("col-xs-2 col-md-2 col-lg-1")
+						.append($('<button>')
+							.attr({
+								class:'btn  btn-block btn-large btn-danger',
+								id:'stop'
+							})
+							.css({
+								'position': 'absolute',
+								'z-index': '1000'
+							})
+							.append("Stop")))
+					.append($('<div>')
+						.addClass("col-xs-2 col-md-2 col-lg-1")
+						.append($('<button>')
+							.attr({
+								class:'btn  btn-block btn-large btn-warning',
+								id:'pause'
+							})
+							.css({
+								'position': 'absolute',
+								'z-index': '1000'
+							})
+							.append("Pause")))
+					.append($('<div>')
+						.addClass("col-xs-2 col-md-2 col-lg-1")
+						.append($('<button>')
+							.attr({
+								class:'btn  btn-block btn-large btn-success',
+								id:'resume'
+							})
+							.css({
+								'position': 'absolute',
+								'z-index': '1000'
+							})
+							.append("Resume")))
+					.append($('<div>')
+						.append($('<h2>')
+							.attr({
+								id: "total-score"
+							}))
+						.attr({
+							class: "col-xs-3 pull-right"
+						})
+						.css({
+							"z-index": "1000"
+						}))
+					.addClass("row"))
+				);
 	},
 	
 	render: function() {
@@ -144,9 +249,13 @@ var Typer = Backbone.Model.extend({
 	},
 	
 	initialize: function() {
-		new TyperView({
+		typer_view = new TyperView({
 			model: this,
 			el: $(document.body)
+		});
+
+		total_score = new ScoreView({
+			model: new Score()
 		});
 	},
 
@@ -156,16 +265,9 @@ var Typer = Backbone.Model.extend({
 		
 		function loop() {
   			self.iterate();
-  			requestAnimationFrame(loop);
-  			setTimeout(loop, (animation_delay*10000));
+  			game_anim = window.requestAnimationFrame(loop);
         }
-		requestAnimationFrame(loop);
-        
-		/*
-		setInterval(function() {
-			self.iterate();
-		},animation_delay);
-		*/
+		game_anim = window.requestAnimationFrame(loop);
 	},
 	
 	iterate: function() {
@@ -218,7 +320,7 @@ var Typer = Backbone.Model.extend({
 		for(var i = 0;i < words_to_be_removed.length;i++) {
 			words.remove(words_to_be_removed[i]);
 		}
-		
+		total_score.render();
 		this.trigger('change');
 	},
 	

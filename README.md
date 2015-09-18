@@ -3,23 +3,24 @@
 Pertanyaan:   
 Sebutkan library apa saja yang dipakai, website library itu dimana, dan dokumentasi library itu ada dimana.
 
-> # jQuery
+> ### jQuery
 [Official website](https://jquery.com/) atau [Github](https://github.com/jquery/jquery)
 
-> # jQUery UI
+> ### jQUery UI
 [Official website](https://jqueryui.com/) atau [Github](https://github.com/jquery/jquery-ui)
 
-> # Underscore.js
+> ### Underscore.js
 [Official website](http://underscorejs.org/) atau [Github](https://github.com/jashkenas/underscore)
 
-> # Backbone.js
+> ### Backbone.js
 [Official website](http://backbonejs.org/) atau [Github](https://github.com/jashkenas/backbone)
 
-> # Bootstrap CSS
+> ### Bootstrap CSS
 [Official website](http://getbootstrap.com/) atau [Github](https://github.com/twbs/bootstrap)
 
 Aplikasi itu 'laggy'. Kenapa? Bagaimana cara membuat animasi lebih 'smooth'?
 
+> Efek lag tersebut disebabkan oleh dua hal: penggunaan fungsi setInterval() dan layouting yang dilakukan secara bersamaan dalam suatu rendering. Fungsi setInterval dapat diganti dengan menggunakan fungsi requestAnimationFrame(). Lalu pada saat mengupdate nilai top elemen html, kita perlu memanggil fungsi jQuery .hide() sebelum mengupdate dan .show() setelah mengupdate untuk mempercepat kinerja dari jQuery UI.
 
 Aplikasi itu tidak akan jalan di salah satu 3 browser populer (Chrome, Firefox, Internet Explorer)? Kenapa? Solusinya hanya menghapus satu character di code, character yang mana?
 
